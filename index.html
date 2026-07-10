@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аналитика результатов тестирования</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Upload Section -->
+    <div id="uploadSection" class="upload-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="upload-card">
+                        <div class="upload-icon">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </div>
+                        <h1>Аналитика результатов тестирования</h1>
+                        <p class="lead">Загрузите Excel файл с результатами тестирования сотрудников</p>
+                        
+                        <div id="dropZone" class="drop-zone">
+                            <input type="file" id="fileInput" accept=".xlsx,.xls" multiple>
+                            <label for="fileInput" class="upload-label">
+                                <i class="bi bi-file-earmark-excel"></i>
+                                Выберите файл или перетащите его сюда
+                            </label>
+                            <p class="text-muted mt-2">Поддерживаются форматы: .xlsx, .xls</p>
+                        </div>
+                        
+                        <div class="divider">
+                            <span>или</span>
+                        </div>
+                        
+                        <button id="demoBtn" class="btn btn-demo">
+                            <i class="bi bi-play-circle"></i>
+                            Загрузить демо-данные
+                        </button>
+                        
+                        <div class="file-info">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle"></i>
+                                Файл должен содержать: Город, Подразделение, ФИО, Должность, 
+                                Дата тестирования, Общий процент и результаты вопросов (1/0)
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboardSection" class="dashboard-section d-none">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h1><i class="bi bi-graph-up"></i> Аналитика результатов тестирования</h1>
+                    </div>
+                    <div class="col-auto">
+                        <button id="newUploadBtn" class="btn btn-outline-light">
+                            <i class="bi bi-plus-lg"></i> Новый анализ
+                        </button>
+                        <button id="exportBtn" class="btn btn-light">
+                            <i class="bi bi-download"></i> Экспорт
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="container">
+                <div class="filters-card">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label"><i class="bi bi-geo-alt"></i> Город</label>
+                            <select id="cityFilter" class="form-select">
+                                <option value="">Все города</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label"><i class="bi bi-building"></i> Подразделение</label>
+                            <select id="subdivisionFilter" class="form-select">
+                                <option value="">Все подразделения</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label"><i class="bi bi-person"></i> Должность</label>
+                            <select id="positionFilter" class="form-select">
+                                <option value="">Все должности</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label"><i class="bi bi-calendar"></i> Дата</label>
+                            <input type="date" id="dateFilter" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col">
+                            <button id="resetFiltersBtn" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-counterclockwise"></i> Сбросить фильтры
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-section">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="kpi-card kpi-primary">
+                            <div class="kpi-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h6>Всего сотрудников</h6>
+                                <h2 id="totalEmployees">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="kpi-card kpi-success">
+                            <div class="kpi-icon">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h6>Успешно прошли</h6>
+                                <h2 id="passedEmployees">0</h2>
+                                <small id="passedPercent" class="text-success">0%</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="kpi-card kpi-danger">
+                            <div class="kpi-icon">
+                                <i class="bi bi-x-circle"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h6>Не прошли</h6>
+                                <h2 id="failedEmployees">0</h2>
+                                <small id="failedPercent" class="text-danger">0%</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="kpi-card kpi-info">
+                            <div class="kpi-icon">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h6>Средний результат</h6>
+                                <h2 id="avgResult">0%</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row g-4 mt-2">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="kpi-card kpi-secondary">
+                            <div class="kpi-icon">
+                                <i class="bi bi-trophy"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h6>Максимальный результат</h6>
+                                <h2 id="maxResult">0%</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="kpi-card kpi-warning">
+                            <div class="kpi-icon">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h6>Минимальный результат</h6>
+                                <h2 id="minResult">0%</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="kpi-card kpi-purple">
+                            <div class="kpi-icon">
+                                <i class="bi bi-geo"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h6>Городов</h6>
+                                <h2 id="totalCities">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tabs -->
+        <div class="analytics-section">
+            <div class="container">
+                <ul class="nav nav-pills analytics-tabs" id="analyticsTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#overview">
+                            <i class="bi bi-speedometer2"></i> Обзор
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#cities">
+                            <i class="bi bi-geo-alt"></i> По городам
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#subdivisions">
+                            <i class="bi bi-building"></i> По подразделениям
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#questions">
+                            <i class="bi bi-question-circle"></i> По вопросам
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#heatmap">
+                            <i class="bi bi-grid-3x3"></i> Тепловая карта
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#employees">
+                            <i class="bi bi-table"></i> Сотрудники
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#report">
+                            <i class="bi bi-file-text"></i> Отчет
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content analytics-content">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview">
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <div class="chart-card">
+                                    <h5><i class="bi bi-pie-chart"></i> Распределение результатов</h5>
+                                    <canvas id="resultsDistributionChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="chart-card">
+                                    <h5><i class="bi bi-bar-chart"></i> Сдали / Не сдали</h5>
+                                    <canvas id="passFailChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-4 mt-2">
+                            <div class="col-lg-12">
+                                <div class="chart-card">
+                                    <h5><i class="bi bi-bar-chart-line"></i> Средний результат по городам</h5>
+                                    <canvas id="citiesOverviewChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cities Tab -->
+                    <div class="tab-pane fade" id="cities">
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <div class="chart-card">
+                                    <h5><i class="bi bi-trophy"></i> ТОП городов</h5>
+                                    <canvas id="topCitiesChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="chart-card">
+                                    <h5><i class="bi bi-exclamation-circle"></i> Антирейтинг городов</h5>
+                                    <canvas id="bottomCitiesChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-4 mt-2">
+                            <div class="col-lg-12">
+                                <div class="chart-card">
+                                    <h5><i class="bi bi-building"></i> Подразделения внутри городов</h5>
+                                    <canvas id="citySubdivisionsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subdivisions Tab -->
+                    <div class="tab-pane fade" id="subdivisions">
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <div class="chart-card">
+                                    <h5><i class="bi bi-building"></i> Рейтинг ЦАП</h5>
+                                    <canvas id="tsapRatingChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="chart-card">
+                                    <h5><i class="bi bi-building"></i> Рейтинг ЦРК</h5>
+                                    <canvas id="tsrkRatingChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Questions Tab -->
+                    <div class="tab-pane fade" id="questions">
+                        <div class="row g-4">
+                            <div class="col-lg-12">
+                                <div class="chart-card">
+                                    <h5><i class="bi bi-exclamation-triangle"></i> ТОП-10 вопросов с наибольшим количеством ошибок</h5>
+                                    <canvas id="topErrorsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-4 mt-2">
+                            <div class="col-lg-12">
+                                <div class="chart-card">
+                                    <h5><i class="bi bi-book"></i> ТОП проблемных тем обучения</h5>
+                                    <canvas id="topicsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Heatmap Tab -->
+                    <div class="tab-pane fade" id="heatmap">
+                        <div class="chart-card">
+                            <h5><i class="bi bi-grid-3x3"></i> Тепловая карта результатов по вопросам</h5>
+                            <div class="heatmap-container">
+                                <canvas id="heatmapChart"></canvas>
+                            </div>
+                            <div class="heatmap-legend">
+                                <span class="legend-item"><span class="legend-color green"></span> 90-100%</span>
+                                <span class="legend-item"><span class="legend-color yellow"></span> 70-89%</span>
+                                <span class="legend-item"><span class="legend-color red"></span> 0-69%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employees Tab -->
+                    <div class="tab-pane fade" id="employees">
+                        <div class="table-card">
+                            <div class="table-header">
+                                <h5><i class="bi bi-table"></i> Таблица сотрудников</h5>
+                                <div class="table-controls">
+                                    <input type="text"id="employeeSearch" class="form-control" placeholder="Поиск по ФИО...">
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="employeesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ФИО</th>
+                                            <th>Город</th>
+                                            <th>Подразделение</th>
+                                            <th>Должность</th>
+                                            <th>Результат</th>
+                                            <th>Статус</th>
+                                            <th>Детали</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Tab -->
+                    <div class="tab-pane fade" id="report">
+                        <div class="report-card">
+                            <div class="report-header">
+                                <h5><i class="bi bi-file-text"></i> Аналитический отчет</h5>
+                                <button id="downloadReportBtn" class="btn btn-primary">
+                                    <i class="bi bi-download"></i> Скачать отчет
+                                </button>
+                            </div>
+                            <div id="reportContent" class="report-content">
+                                <!-- Report will be generated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Modal -->
+    <div class="modal fade" id="employeeModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person"></i> Карточка сотрудника</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="employeeModalBody">
+                    <!-- Employee details will be shown here -->
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal fade" id="exportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-download"></i> Экспорт данных</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-grid gap-3">
+                        <button id="exportPdfBtn" class="btn btn-outline-primary">
+                            <i class="bi bi-file-earmark-pdf"></i> Экспорт в PDF
+                        </button>
+                        <button id="exportExcelBtn" class="btn btn-outline-success">
+                            <i class="bi bi-file-earmark-excel"></i> Экспорт в Excel
+                        </button>
+                        <button id="exportManagerReportBtn" class="btn btn-outline-info">
+                            <i class="bi bi-file-earmark-text"></i> Отчет для руководителя
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js"></script>
+    
+    <script src="app.js"></script>
+    <script src="analytics.js"></script>
+    <script src="charts.js"></script>
+    <script src="table.js"></script>
+    <script src="filters.js"></script>
+    <script src="export.js"></script>
+    <script src="demo.js"></script>
+</body>
+</html>
